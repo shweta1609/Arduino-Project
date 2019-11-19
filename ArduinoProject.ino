@@ -20,6 +20,8 @@ int blueButton = 7;
 int RedPin = 2;
 int GreenPin = 3;
 int BluePin = 4;
+int col = 0;
+char slider = '_';
 LiquidCrystal lcd(13, 12, 11, 10, 9, 8); 
 // tell the RedBoard what pins are connected to the display
 int tones[] = {262, 330, 392, 494};
@@ -34,28 +36,35 @@ void setup() {
   pinMode(buzzerPin, OUTPUT);
   pinMode(RedPin,OUTPUT);
   pinMode(BluePin,OUTPUT);
+  lcd.setCursor(0,1);               //set the cursor to the 0,1 position (top left corner)
+  lcd.print(slider);
 }
 
 void loop() {
 
-  lcd.setCursor(0,0);               //set the cursor to the 0,0 position (top left corner)
-  lcd.print("Hello, world!");       //print hello, world! starting at that position
-
-  lcd.setCursor(0,1);               //move the cursor to the first space of the bottom row
-  if(digitalRead(redButton) == LOW){
-    analogWrite(RedPin, 100);
+//  lcd.setCursor(0,1);               //move the cursor to the first space of the bottom row
+  if(digitalRead(redButton) == LOW){ //move right
+    lcd.clear();
+    if(col < 15)
+      col += 1;
+    lcd.setCursor(col,1);               //set the cursor to the 0,0 position (top left corner)
+    lcd.print(slider);
+    delay(150);
+    analogWrite(RedPin, 200);
     analogWrite(BluePin, 0);
-    analogWrite(GreenPin,0);
-    lcd.print(millis()/1000);         //print the number of seconds that have passed since the last reset
   }
-  else if(digitalRead(blueButton) == LOW){
-    lcd.print("blueeee");
-    analogWrite(RedPin, 0);
-    analogWrite(BluePin, 100);
-    analogWrite(GreenPin,0);
-    tone(buzzerPin, 130, 250);   //E6
-    delay(275);
-    tone(buzzerPin, 98, 500);   //C7
-    delay(500);
+  else if(digitalRead(blueButton) == LOW){ //move left
+    lcd.clear();
+    if(col > 0)
+      col -= 1;
+    lcd.setCursor(col,1);               //set the cursor to the 0,0 position (top left corner)
+    lcd.print(slider);
+    delay(150);
+    analogWrite(RedPin, 100);
+    analogWrite(BluePin, 200);
+//    tone(buzzerPin, 130, 250);   //E6
+//    delay(275);
+//    tone(buzzerPin, 98, 500);   //C7
+//    delay(500);
     }
 }  
