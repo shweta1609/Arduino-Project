@@ -20,11 +20,30 @@ int blueButton = 7;
 int RedPin = 2;
 int GreenPin = 3;
 int BluePin = 4;
-int col = 0;
-char slider = '_';
+int currCol = -1;
+int newCol = 0;
+bool randomGen = false;
+bool start = false;
+int sliderLen = 1;
 LiquidCrystal lcd(13, 12, 11, 10, 9, 8); 
 // tell the RedBoard what pins are connected to the display
 int tones[] = {262, 330, 392, 494};
+
+void initBlock(){
+  byte Block[8] =
+  {
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111
+  };
+  lcd.createChar(0,Block);
+}
+
 void setup() {                     
 
   lcd.begin(16, 2);                 //tell the lcd library that we are using a display that is 16 characters wide and 2 characters high
@@ -36,35 +55,71 @@ void setup() {
   pinMode(buzzerPin, OUTPUT);
   pinMode(RedPin,OUTPUT);
   pinMode(BluePin,OUTPUT);
-  lcd.setCursor(0,1);               //set the cursor to the 0,1 position (top left corner)
-  lcd.print(slider);
+  lcd.setCursor(0,0);               //set the cursor to the 0,1 position (top left corner)
+  lcd.print("Press any button");
+  lcd.setCursor(3,1);
+  lcd.print("to start");
+  initBlock();
 }
 
 void loop() {
-
-//  lcd.setCursor(0,1);               //move the cursor to the first space of the bottom row
-  if(digitalRead(redButton) == LOW){ //move right
-    lcd.clear();
-    if(col < 15)
-      col += 1;
-    lcd.setCursor(col,1);               //set the cursor to the 0,0 position (top left corner)
-    lcd.print(slider);
-    delay(150);
-    analogWrite(RedPin, 200);
-    analogWrite(BluePin, 0);
+//  lcd.clear();
+  if(!start){
+    if((digitalRead(redButton) == LOW) or (digitalRead(blueButton) == LOW))
+      start = true;
   }
-  else if(digitalRead(blueButton) == LOW){ //move left
-    lcd.clear();
-    if(col > 0)
-      col -= 1;
-    lcd.setCursor(col,1);               //set the cursor to the 0,0 position (top left corner)
-    lcd.print(slider);
-    delay(150);
-    analogWrite(RedPin, 100);
-    analogWrite(BluePin, 200);
-//    tone(buzzerPin, 130, 250);   //E6
-//    delay(275);
-//    tone(buzzerPin, 98, 500);   //C7
-//    delay(500);
+ 
+  else{
+    if(sliderLen ==16){
+      lcd.clear();
+      sliderLen = 0;
+      lcd.setCursor(0,0);
+      lcd.print("You Won!");
     }
+    else{
+    if(digitalRead(redButton) == LOW){ //move right
+      lcd.clear();
+      if(currCol < 15)
+        currCol += 1;
+      for(int i=0; i<sliderLen; i++){
+        lcd.setCursor(currCol+i,1);               //set the cursor to the 0,0 position (top left corner)
+        lcd.write(byte(0));
+        }
+      
+      delay(150);
+      analogWrite(RedPin, 200);
+      analogWrite(BluePin, 0);
+    }
+    else if(digitalRead(blueButton) == LOW){ //move left
+      lcd.clear();
+      if(currCol > 0)
+        currCol -= 1;
+      for(int i=0; i<sliderLen; i++){
+        lcd.setCursor(currCol+i,1);               //set the cursor to the 0,0 position (top left corner)
+        lcd.write(byte(0));
+        }
+      delay(150);
+      analogWrite(RedPin, 100);
+      analogWrite(BluePin, 200);
+  //    tone(buzzerPin, 130, 250);   //E6
+  //    delay(275);
+  //    tone(buzzerPin, 98, 500);   //C7
+  //    delay(500);
+      }
+      if(!randomGen and sliderLen<15){
+        generateBlock();
+        newCol = random(0,16);
+        randomGen = true;
+       }
+       lcd.setCursor(newCol,0);               
+       lcd.write(byte(0)); 
+
+       if((newCol == currCol) or (newCol == (currCol+sliderLen-1))){
+        sliderLen +=1;
+        lcd.setCursor(newCol,0);
+        lcd.write("                ");
+        randomGen = false;
+        }
+    }
+  }
 }  
