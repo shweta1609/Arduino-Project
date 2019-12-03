@@ -18,19 +18,9 @@ void setup(){
 }
 
 void draw(){
-    if (myPort.available() > 0){
+    if (myPort.available() > 0){  
     val = myPort.readStringUntil('\n');
     if (val != null){
-      if(intro){
-        background(#ECF08A);
-        textAlign(CENTER);
-        text("Time Limit: 45 seconds", 80,60);
-        text("Total number of rounds: 2", 80,80);
-        text("Target Score: 30", 80,100);
-        delay(3500);
-        //This is not printing. Need to look into it.
-        intro = false;
-      }
       background(#ECF08A);
       textAlign(LEFT);
       val = val.trim();
@@ -55,6 +45,12 @@ void draw(){
       }
       else{
         textAlign(LEFT);
+        if(intro){
+        text("Time Limit: 50 seconds", 80,60);
+        text("Total number of rounds: 2", 80,80);
+        text("Target Score: 30", 80,100);
+        intro = false;
+        }
         text(val, 80, 150);
       }
     }
