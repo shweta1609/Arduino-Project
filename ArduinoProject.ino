@@ -25,6 +25,11 @@ int newCol = 0;
 bool randomGen = false;
 bool start = false;
 int sliderLen = 1;
+int prev = 16;
+int stage = 1;
+int timeLimit = 25000;
+int timeElapsed = 0;
+int prevMillis = 0;
 LiquidCrystal lcd(13, 12, 11, 10, 9, 8); 
 // tell the RedBoard what pins are connected to the display
 int tones[] = {262, 330, 392, 494};
@@ -64,17 +69,33 @@ void setup() {
 
 void loop() {
 //  lcd.clear();
-  if(!start){
-    if((digitalRead(redButton) == LOW) or (digitalRead(blueButton) == LOW))
+  if(!start){  
+    if((digitalRead(redButton) == LOW) or (digitalRead(blueButton) == LOW)){
       start = true;
+      tone(buzzerPin, 130, 250);   //E6
+      delay(275);
+      tone(buzzerPin, 98, 500);   //C7
+      delay(500);
+      lcd.clear();
+      timeElapsed = millis();
+    }
   }
  
   else{
+    timeElapsed = millis();
+    prevMillis = timeElapsed;
+    Serial.print("Timer: ");
+    Serial.println(timeElapsed);
     if(sliderLen ==16){
       lcd.clear();
-      sliderLen = 0;
+      sliderLen = 1;
       lcd.setCursor(0,0);
-      lcd.print("You Won!");
+      lcd.print("Stage Complete");
+      lcd.setCursor(3,1);
+      lcd.print("Continue?");
+      delay(200);
+      start = false;
+      stage += 1;
     }
     else{
     if(digitalRead(redButton) == LOW){ //move right
@@ -101,25 +122,40 @@ void loop() {
       delay(150);
       analogWrite(RedPin, 100);
       analogWrite(BluePin, 200);
-  //    tone(buzzerPin, 130, 250);   //E6
-  //    delay(275);
-  //    tone(buzzerPin, 98, 500);   //C7
-  //    delay(500);
       }
       if(!randomGen and sliderLen<15){
-        generateBlock();
         newCol = random(0,16);
+        while((newCol == prev) or (newCol == prev+1)or (newCol == prev-1))
+        newCol = random(0,16);
+        prev = newCol;
+        Serial.print("Random Number:");
+        Serial.println(newCol);
         randomGen = true;
        }
+       
        lcd.setCursor(newCol,0);               
-       lcd.write(byte(0)); 
+       lcd.write(byte(0));
 
        if((newCol == currCol) or (newCol == (currCol+sliderLen-1))){
-        sliderLen +=1;
+        sliderLen += 1;
+        Serial.print("Score:");
+        Serial.println(sliderLen);
         lcd.setCursor(newCol,0);
         lcd.write("                ");
         randomGen = false;
         }
     }
+      if(timeElapsed >= timeLimit){
+        lcd.clear();
+        lcd.setCursor(3,0);
+        lcd.print("Times Up!");
+        lcd.setCursor(3,1);
+        lcd.print("You lose!");
+        timeElapsed = 0;
+        sliderLen = 0;
+        start = false;
+        sliderLen = 1;
+    }
   }
+
 }  
